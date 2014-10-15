@@ -152,7 +152,8 @@ var Plugin = function(element, options) {
 Plugin.prototype.init = function() {
     var $el = $(this.element);
 
-    var requestParams = this.options.requestParams;
+    var options = this.options;
+    var requestParams = options.requestParams;
 
     var select2options = $.extend({}, {
         query: function(query) {
@@ -163,8 +164,15 @@ Plugin.prototype.init = function() {
                         // for each autocomplete list item. "id" is
                         // already defined on the apr object
                         apr["text"] = apr["description"];
-                        return apr;
+                        
+                        var skipResult = false;
+                        if (options.filterResults) {
+                            skipResult = options.filterResults.call(null, apr);
+                        }
+                        
+                        return skipResult ? null : apr;
                     });
+                    
                     query.callback({results: results});
                 })
                 .fail(function(errorMsg) {
@@ -186,8 +194,8 @@ Plugin.prototype.init = function() {
         allowClear: true,
         multiple: false,
         dropdownCssClass: "jquery-placecomplete-google-attribution",
-        placeholder: this.options.placeholderText
-    }, this.options);
+        placeholder: options.placeholderText
+    }, options);
 
     $el.select2(select2options);
 
